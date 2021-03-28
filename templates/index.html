@@ -1,0 +1,15 @@
+<html>
+	<head>
+		<title>
+			Password stuff!
+		</title>
+	</head>
+	<body>
+		<h3>Password</h3>
+		<form action="" method="POST">
+		{%csrf_token%}
+		Password: <input name="password">
+		<input type="submit" value="hash">
+		</form>
+	</body>
+</html>
