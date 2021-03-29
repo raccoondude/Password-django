@@ -1,9 +1,14 @@
+SECERTKEY = ""
 from django.shortcuts import render
 from django.http import HttpResponse
 import hashlib
 from .models import User
 import random
 import string
+import urllib
+import urllib.request
+import urllib3
+import requests
 # Create your views here.
 
 def index(request):
@@ -19,6 +24,16 @@ def random_char(y):
 
 def signup(request):
     if request.method == "POST":
+        recaptcha_response = request.POST['g-recaptcha-response']
+        url = 'https://www.google.com/recaptcha/api/siteverify'
+        values = {
+                'secret': SECERTKEY,
+                'response': recaptcha_response
+        }
+        req = requests.post(url, data=values)
+        result_json = req.json()
+        if not result_json['success']:
+            return render(request, "signup.html")
         user = request.POST["user"]
         Password = request.POST["password"]
         Salt = random_char(4)
@@ -40,6 +55,16 @@ def signup(request):
 
 def signin(request):
     if request.method == "POST":
+        recaptcha_response = request.POST['g-recaptcha-response']
+        url = 'https://www.google.com/recaptcha/api/siteverify'
+        values = {
+                'secret': SECERTKEY,
+                'response': recaptcha_response
+        }
+        req = requests.post(url, data=values)
+        result_json = req.json()
+        if not result_json['success']:
+            return render(request, "signin.html")
         user = request.POST["user"]
         password = request.POST["password"]
         try:
