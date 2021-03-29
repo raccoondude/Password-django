@@ -1,8 +1,8 @@
 SECERTKEY = ""
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 import hashlib
-from .models import User
+from .models import User, Token
 import random
 import string
 import urllib
@@ -16,7 +16,13 @@ def index(request):
         Password = request.POST["password"]
         Hash = hashlib.sha256(Password.encode()).hexdigest()
         return HttpResponse(Hash)
-    return render(request, "index.html")
+    try:
+        tokencookie = request.COOKIES['token']
+        token = Token.objects.get(tokenID=tokencookie)
+        username = token.userowo.username
+    except:
+        username = ""
+    return render(request, "index.html", {"username":username})
 
 def random_char(y):
        return ''.join(random.choice(string.ascii_letters) for x in range(y))
@@ -75,7 +81,11 @@ def signin(request):
         passhash = user.passhash
         saltpass = password + salt
         if hashlib.sha256(saltpass.encode()).hexdigest() == passhash:
-            return HttpResponse("Login successful!")
+            newtokenID = random_char(40)
+            newtoken = Token(tokenID=newtokenID, userowo=user).save()
+            response = HttpResponseRedirect("/")
+            response.set_cookie("token", newtokenID)
+            return response
         else:
             return HttpResponse("Login Failed")
     return render(request, "signin.html")
